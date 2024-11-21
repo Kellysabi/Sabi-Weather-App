@@ -1,21 +1,19 @@
 // app.js
 
-// Instantiate WeatherService class with your API key
-const weatherService = new WeatherService('bfbce5fd05f74eefbdc230719241809');
+// Instantiate WeatherService class
+const weatherService = new WeatherService();
 
 // UI elements
 const cityForm = document.querySelector('form');
-const card = document.querySelector('.card'); // Assuming 'card' is a class
-const details = document.querySelector('.details'); // Assuming 'details' is a class
+const card = document.querySelector('.card');
+const details = document.querySelector('.details');
 const time = document.querySelector('img.time');
-const icon = document.querySelector('.icon img'); // Assuming there's an img tag inside the icon class
+const icon = document.querySelector('.icon img');
 
 // Function to update the UI
 const updateUI = (data) => {
-    // Destructure properties from data object
     const { cityDetail, country, weather, localTime, temp, dayTime, iconSrc } = data;
 
-    // Display city details and weather info in the DOM
     details.innerHTML = `
         <h5 class="my-3">${cityDetail}</h5>
         <div class="my-3">${country}</div>
@@ -27,34 +25,25 @@ const updateUI = (data) => {
         </div>   
     `;
 
-    // Update the weather icon
     icon.setAttribute('src', `https:${iconSrc}`);
-
-    // Set the correct time of day image (day/night)
     const timeSrc = dayTime.is_day ? 'img/day.svg' : 'img/night.svg';
     time.setAttribute('src', timeSrc);
-
-    // Remove 'd-none' class to display the card
     card.classList.remove('d-none');
 }
 
 // Function to get city and weather details and pass them to updateUI
 const updateCity = async (city) => {
     try {
-        // Fetch city details using the city name
         const cityDetail = await weatherService.getCity(city);
-
-        // Use the city name to fetch weather details
         const cityWeather = await weatherService.getWeather(cityDetail.name);
 
-        // Return data formatted for UI
         return {
             cityDetail: cityDetail.name,
             country: cityDetail.country,
             weather: cityWeather.current.condition.text,
             localTime: cityWeather.location.localtime,
             temp: cityWeather.current.temp_c,
-            dayTime: cityWeather.current,  // Pass the current object to check if it's day or night
+            dayTime: cityWeather.current,
             iconSrc: cityWeather.current.condition.icon
         };
     } catch (err) {
@@ -66,17 +55,11 @@ const updateCity = async (city) => {
 // Form submission event listener
 cityForm.addEventListener('submit', (e) => {
     e.preventDefault();
-
-    // Get the city name from input
     const city = cityForm.city.value.trim();
     cityForm.reset();
-
-    // Update city and weather details and UI
     updateCity(city)
         .then(data => updateUI(data))
         .catch(err => console.log(err));
-
-    // Store city in local storage
     localStorage.setItem('searchCity', city);
 });
 
